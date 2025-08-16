@@ -124,7 +124,8 @@ async function verifyTaskCompletion(task: any, user: any) {
     }
   } catch (error) {
     console.error('Verification error:', error);
-    return { verified: false, message: 'Verification failed', data: { error: error.message } };
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return { verified: false, message: 'Verification failed', data: { error: message } };
   }
 }
 

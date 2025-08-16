@@ -9,7 +9,7 @@ import {
   timestamp, 
   date, 
   jsonb,
-  unique 
+  AnyPgColumn 
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -22,7 +22,7 @@ export const users = pgTable('users', {
   bones: integer('bones').default(0),
   rank: integer('rank').default(0),
   referralCode: varchar('referral_code', { length: 4 }).unique(),
-  referredBy: integer('referred_by').references(() => users.id),
+  referredBy: integer('referred_by').references(((): AnyPgColumn => users.id)),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -46,20 +46,18 @@ export const dailyTasks = pgTable('daily_tasks', {
 
 export const userTaskCompletions = pgTable('user_task_completions', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
-  taskId: integer('task_id').notNull().references(() => dailyTasks.id),
+  userId: integer('user_id').notNull().references(((): AnyPgColumn => users.id)),
+  taskId: integer('task_id').notNull().references(((): AnyPgColumn => dailyTasks.id)),
   completedAt: timestamp('completed_at').defaultNow(),
   verificationStatus: varchar('verification_status', { length: 20 }).default('pending'), // 'pending', 'verified', 'failed'
   verificationData: jsonb('verification_data'), // Store verification proof
   bonesEarned: integer('bones_earned').default(0),
-}, (table) => ({
-  uniqueUserTaskDate: unique().on(table.userId, table.taskId, sql`DATE(${table.completedAt})`),
-}));
+});
 
 export const referralRewards = pgTable('referral_rewards', {
   id: serial('id').primaryKey(),
-  referrerId: integer('referrer_id').notNull().references(() => users.id),
-  referredUserId: integer('referred_user_id').notNull().references(() => users.id),
+  referrerId: integer('referrer_id').notNull().references(((): AnyPgColumn => users.id)),
+  referredUserId: integer('referred_user_id').notNull().references(((): AnyPgColumn => users.id)),
   bonesAwarded: integer('bones_awarded').default(100),
   createdAt: timestamp('created_at').defaultNow(),
 });
