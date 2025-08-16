@@ -1,0 +1,44 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js
+.next/
+out/
+.vercel/
+.next/static/
+.next/cache/
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# OS and editors
+.DS_Store
+*.swp
+*.swo
+*.tmp
+*.log
+.vscode/
+.idea/
+
+# Build and tooling artifacts
+coverage/
+dist/
+*.tsbuildinfo
+drizzle/
+drizzle/*.json
+drizzle/*.sqlite
+**/*.sqlite
+**/*.db
+
+# Typescript
+.next/types/
+tsconfig.tsbuildinfo
+
+# Misc
+*.local
