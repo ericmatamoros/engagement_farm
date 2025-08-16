@@ -29,17 +29,21 @@ export async function POST(request: NextRequest) {
 
     // Create unique 4-digit code for the new user
     const codeForNewUser = await generateUniqueReferralCode();
-    const [newUser] = await db.insert(users).values({
-      walletAddress,
-      referralCode: codeForNewUser,
-      referredBy: isAdminBootstrap ? null : referrer[0].id,
-    }).returning();
+    const inserted = await db
+      .insert(users)
+      .values({
+        walletAddress,
+        referralCode: codeForNewUser,
+        referredBy: isAdminBootstrap ? null : referrer[0]?.id ?? null,
+      })
+      .returning({ id: users.id });
+    const newUserId = inserted[0].id;
 
     // Award referrer only when not using admin bootstrap code
     if (!isAdminBootstrap && referrer.length > 0) {
       await db.insert(referralRewards).values({
         referrerId: referrer[0].id,
-        referredUserId: newUser.id,
+        referredUserId: newUserId,
         bonesAwarded: 100,
       });
 
@@ -53,7 +57,7 @@ export async function POST(request: NextRequest) {
         .where(eq(users.id, referrer[0].id));
     }
 
-    return NextResponse.json({ success: true, userId: newUser.id, referralCode: codeForNewUser });
+    return NextResponse.json({ success: true, userId: newUserId, referralCode: codeForNewUser });
   } catch (e) {
     console.error('Wallet register error', e);
     return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
