@@ -65,17 +65,7 @@ export async function POST(request: NextRequest) {
       bonesEarned: verificationResult.verified ? taskData.bonesReward : 0,
     });
 
-    if (verificationResult.verified) {
-      // Update user's total BONES (this will be handled by the database trigger)
-      // But we can also update it directly for immediate response
-      await db
-        .update(users)
-        .set({ 
-          bones: sql`${users.bones} + ${taskData.bonesReward}`,
-          updatedAt: new Date() 
-        })
-        .where(eq(users.id, userData.id));
-    }
+    // Do not manually update users.bones here; database trigger updates totals
 
     return NextResponse.json({ 
       success: true, 
