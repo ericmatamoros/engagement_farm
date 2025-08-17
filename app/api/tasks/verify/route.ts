@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
 
     const userData = user[0];
 
-    // Require registration (referral code) before allowing verification
-    if (!userData.referralCode) {
-      return NextResponse.json({ error: 'Registration required: enter a 4-digit invitation code to unlock tasks.' }, { status: 403 });
-    }
+    // Referral code requirement removed
 
     // Get task details
     const task = await db.select().from(dailyTasks).where(eq(dailyTasks.id, taskId)).limit(1);

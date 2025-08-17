@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
         code,
         grant_type: 'authorization_code',
         client_id: clientId,
-        redirect_uri: `${process.env.NEXTAUTH_URL}/api/auth/twitter/callback`,
+        redirect_uri: `${process.env.NEXTAUTH_URL || request.nextUrl.origin}/api/auth/twitter/callback`,
         code_verifier: codeVerifier,
       }),
     });

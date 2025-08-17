@@ -7,32 +7,7 @@ import { useEffect } from 'react';
 export default function WalletConnection() {
   const { address, isConnected } = useAccount();
 
-  useEffect(() => {
-    const maybeRegister = async () => {
-      if (!isConnected || !address) return;
-      // Check if user exists and has referral code
-      const statusRes = await fetch(`/api/user/twitter-status?wallet=${address}`);
-      const status = await statusRes.json();
-      if (status?.referralCode) return; // already registered
-
-      // Ask for 4-digit code
-      const code = window.prompt('Enter your 4-digit invitation code to register:');
-      if (!code || code.length !== 4) return;
-      const res = await fetch('/api/auth/wallet/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress: address, referralCode: code.toUpperCase() }),
-      });
-      if (!res.ok) {
-        const e = await res.json().catch(() => ({}));
-        alert(`Registration failed: ${e.error || res.statusText}`);
-      } else {
-        // refresh state so code appears
-        await fetch(`/api/user/twitter-status?wallet=${address}`, { cache: 'no-store' });
-      }
-    };
-    void maybeRegister();
-  }, [isConnected, address]);
+  // Referral registration removed per request
   return (
     <div className="text-center">
       <div className="mb-6">

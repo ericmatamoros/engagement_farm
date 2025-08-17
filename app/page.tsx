@@ -7,7 +7,7 @@ import UserMiniStats from '@/components/UserMiniStats';
 import { Wallet, Twitter, Trophy, CheckCircle, Users, Calendar, Settings } from 'lucide-react';
 import WalletConnection from '@/components/WalletConnection';
 import TwitterConnection from '@/components/TwitterConnection';
-import ReferralCode from '@/components/ReferralCode';
+// Referral removed
 import DailyTasks from '@/components/DailyTasks';
 import Leaderboard from '@/components/Leaderboard';
 import UserStats from '@/components/UserStats';
@@ -145,12 +145,7 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <div className="border border-green-400 rounded-lg p-4">
-                    <h4 className="text-green-400 font-medium mb-2">
-                      Invite friends and multiply BONES.
-                    </h4>
-                    <ReferralCode />
-                  </div>
+                  {/* Referral feature removed */}
 
                   <UserMiniStats />
                 </div>
@@ -211,12 +206,7 @@ export default function Home() {
 
                   <TwitterConnection />
 
-                  <div className="border border-green-400 rounded-lg p-4">
-                    <h4 className="text-green-400 font-medium mb-2">
-                      Invite friends and multiply BONES.
-                    </h4>
-                    <ReferralCode />
-                  </div>
+                  {/* Referral feature removed */}
 
                   <div className="grid grid-cols-3 gap-4">
                     <div className="bg-gray-800/50 rounded-lg p-3 text-center">

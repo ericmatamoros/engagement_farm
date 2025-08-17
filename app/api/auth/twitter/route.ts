@@ -38,9 +38,11 @@ export async function GET(request: NextRequest) {
     // 5. Store the connection in the database
 
     const twitterAuthUrl = new URL('https://twitter.com/i/oauth2/authorize');
+    const origin = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    const redirectUri = `${origin}/api/auth/twitter/callback`;
     twitterAuthUrl.searchParams.set('response_type', 'code');
     twitterAuthUrl.searchParams.set('client_id', clientId);
-    twitterAuthUrl.searchParams.set('redirect_uri', `${process.env.NEXTAUTH_URL}/api/auth/twitter/callback`);
+    twitterAuthUrl.searchParams.set('redirect_uri', redirectUri);
     twitterAuthUrl.searchParams.set('scope', 'tweet.read users.read follows.read offline.access');
     twitterAuthUrl.searchParams.set('state', state);
     twitterAuthUrl.searchParams.set('code_challenge', codeChallenge);
