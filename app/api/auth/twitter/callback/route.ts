@@ -11,12 +11,13 @@ export async function GET(request: NextRequest) {
   const error = searchParams.get('error');
 
   if (error) {
-    // Redirect back to the main page with error
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?error=twitter_auth_failed`);
+    const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    return NextResponse.redirect(`${baseUrl}?error=twitter_auth_failed`);
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?error=missing_params`);
+    const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    return NextResponse.redirect(`${baseUrl}?error=missing_params`);
   }
 
   try {
@@ -25,7 +26,8 @@ export async function GET(request: NextRequest) {
     const storedState = cookies.get('tw_state')?.value;
     const codeVerifier = cookies.get('tw_cv')?.value;
     if (!storedState || !codeVerifier || storedState !== state) {
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?error=invalid_state`);
+      const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+      return NextResponse.redirect(`${baseUrl}?error=invalid_state`);
     }
 
     // Exchange authorization code for access token
@@ -86,7 +88,8 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (existingTwitterUser.length > 0 && existingTwitterUser[0].walletAddress !== state) {
-      return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?error=twitter_already_connected`);
+      const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+      return NextResponse.redirect(`${baseUrl}?error=twitter_already_connected`);
     }
 
     // Check if wallet exists
@@ -119,10 +122,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Redirect back to the main page with success
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?twitter_connected=true`);
+    {
+      const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+      return NextResponse.redirect(`${baseUrl}?twitter_connected=true`);
+    }
 
   } catch (error) {
     console.error('Twitter callback error:', error);
-    return NextResponse.redirect(`${process.env.NEXTAUTH_URL}?error=twitter_connection_failed`);
+    const baseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+    return NextResponse.redirect(`${baseUrl}?error=twitter_connection_failed`);
   }
 }
