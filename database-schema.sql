@@ -112,3 +112,16 @@ CREATE TRIGGER trigger_update_bones
     AFTER INSERT OR UPDATE ON user_task_completions
     FOR EACH ROW
     EXECUTE FUNCTION update_user_bones();
+
+-- Invites table to bulk import referral/invite data
+CREATE TABLE IF NOT EXISTS invites (
+    id SERIAL PRIMARY KEY,
+    external_user_id VARCHAR(100) UNIQUE NOT NULL,
+    signup_wallet_address VARCHAR(80),
+    user_name VARCHAR(120),
+    invited_by_username VARCHAR(120),
+    invited_by_signup_address VARCHAR(80),
+    created_at TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_invites_ext_user_id ON invites(external_user_id);

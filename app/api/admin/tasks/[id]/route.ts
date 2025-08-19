@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { dailyTasks } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { isAdminWallet } from '@/lib/admin';
 
 export async function PUT(
   request: NextRequest,
@@ -68,7 +69,7 @@ export async function PATCH(
     const { isActive, adminWallet } = body;
 
     // Verify admin access
-    if (!adminWallet || adminWallet.toLowerCase() !== process.env.ADMIN_WALLET?.toLowerCase()) {
+    if (!adminWallet || !isAdminWallet(adminWallet)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

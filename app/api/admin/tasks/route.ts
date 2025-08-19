@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { dailyTasks, userTaskCompletions } from '@/lib/schema';
 import { eq, sql } from 'drizzle-orm';
+import { isAdminWallet } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const adminWallet = searchParams.get('admin_wallet');
 
   // Verify admin access
-  if (!adminWallet || adminWallet.toLowerCase() !== process.env.ADMIN_WALLET?.toLowerCase()) {
+  if (!adminWallet || !isAdminWallet(adminWallet)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Verify admin access
-    if (!createdBy || createdBy.toLowerCase() !== process.env.ADMIN_WALLET?.toLowerCase()) {
+    if (!createdBy || !isAdminWallet(createdBy)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAdminWallet } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -9,9 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const adminWallet = process.env.ADMIN_WALLET?.toLowerCase();
-    const isAdmin = walletAddress.toLowerCase() === adminWallet;
-
+    const isAdmin = isAdminWallet(walletAddress);
     return NextResponse.json({ isAdmin });
 
   } catch (error) {

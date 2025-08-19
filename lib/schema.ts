@@ -62,6 +62,16 @@ export const referralRewards = pgTable('referral_rewards', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+export const invites = pgTable('invites', {
+  id: serial('id').primaryKey(),
+  externalUserId: varchar('external_user_id', { length: 100 }).unique().notNull(),
+  signupWalletAddress: varchar('signup_wallet_address', { length: 80 }),
+  userName: varchar('user_name', { length: 120 }),
+  invitedByUsername: varchar('invited_by_username', { length: 120 }),
+  invitedBySignupAddress: varchar('invited_by_signup_address', { length: 80 }),
+  createdAt: timestamp('created_at'),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type DailyTask = typeof dailyTasks.$inferSelect;

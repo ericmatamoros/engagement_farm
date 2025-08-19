@@ -16,6 +16,7 @@ import {
 import AdminTaskForm from '@/components/admin/AdminTaskForm';
 import AdminStats from '@/components/admin/AdminStats';
 import TaskList from '@/components/admin/TaskList';
+import UploadInvites from '@/components/admin/UploadInvites';
 
 export default function AdminPanel() {
   const { address } = useAccount();
@@ -143,8 +144,8 @@ export default function AdminPanel() {
           {activeTab === 'users' && (
             <div>
               <h2 className="text-2xl font-bold mb-6">User Management</h2>
-              <div className="glass-effect rounded-xl p-6">
-                <p className="text-gray-400">User management features coming soon...</p>
+              <div className="glass-effect rounded-xl p-6 space-y-6">
+                <UploadInvites />
               </div>
             </div>
           )}
