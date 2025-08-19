@@ -71,10 +71,7 @@ export default function TwitterConnection() {
           </button>
         )}
       </div>
-      {/* Referral code display */}
-      {isConnected && (
-        <div className="text-xs text-gray-400">Your code: <span id="ref-code" className="text-blue-300"></span></div>
-      )}
+      {/* Referral code display removed */}
     </div>
   );
 }

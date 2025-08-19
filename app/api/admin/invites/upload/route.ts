@@ -32,22 +32,43 @@ export async function POST(request: NextRequest) {
       createdAt: header.findIndex((h) => /created at/i.test(h)),
     };
 
-    const rows = lines.slice(1).map((line) => line.split(',')).filter((cols) => cols.length >= 2);
+    const rows = lines
+      .slice(1)
+      .map((line) => line.split(','))
+      .filter((cols) => cols.length >= 2);
     let inserted = 0;
     let skipped = 0;
 
+    const clean = (value: string | undefined | null) => {
+      if (!value) return '';
+      const trimmed = String(value).trim();
+      // Remove wrapping quotes if present
+      if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+        return trimmed.slice(1, -1).trim();
+      }
+      return trimmed;
+    };
+
+    const parseDateSafe = (value: string | undefined | null) => {
+      const raw = clean(value);
+      if (!raw) return null;
+      const d = new Date(raw);
+      if (isNaN(d.getTime())) return null;
+      return d;
+    };
+
     for (const cols of rows) {
-      const extId = (cols[idx.externalUserId] || '').trim();
+      const extId = clean(cols[idx.externalUserId]);
       if (!extId) { skipped++; continue; }
       const existing = await db.select().from(invites).where(eq(invites.externalUserId, extId)).limit(1);
       if (existing.length > 0) { skipped++; continue; }
       await db.insert(invites).values({
         externalUserId: extId,
-        signupWalletAddress: (cols[idx.signupWalletAddress] || '').trim() || null,
-        userName: (cols[idx.userName] || '').trim() || null,
-        invitedByUsername: (cols[idx.invitedByUsername] || '').trim() || null,
-        invitedBySignupAddress: (cols[idx.invitedBySignupAddress] || '').trim() || null,
-        createdAt: cols[idx.createdAt] ? new Date(cols[idx.createdAt]) : null,
+        signupWalletAddress: clean(cols[idx.signupWalletAddress]) || null,
+        userName: clean(cols[idx.userName]) || null,
+        invitedByUsername: clean(cols[idx.invitedByUsername]) || null,
+        invitedBySignupAddress: clean(cols[idx.invitedBySignupAddress]) || null,
+        createdAt: idx.createdAt >= 0 ? parseDateSafe(cols[idx.createdAt]) : null,
       });
       inserted++;
     }

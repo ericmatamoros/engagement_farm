@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { users } from '@/lib/schema';
+import { users, invites } from '@/lib/schema';
 import { desc, isNotNull, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -30,10 +30,27 @@ export async function GET(request: NextRequest) {
       .from(users)
       .where(isNotNull(users.twitterUsername));
 
+    // Referral leaderboard (count invites by inviter wallet)
+    const referralRows = await db
+      .select({
+        inviterWallet: invites.invitedBySignupAddress,
+        refs: sql<number>`count(*)`,
+      })
+      .from(invites)
+      .where(sql`${invites.invitedBySignupAddress} IS NOT NULL AND ${invites.invitedBySignupAddress} <> ''`)
+      .groupBy(invites.invitedBySignupAddress)
+      .orderBy(desc(sql`count(*)`))
+      .limit(100);
+
+    const referralLeaderboard = referralRows
+      .filter((r) => !!r.inviterWallet)
+      .map((r, idx) => ({ rank: idx + 1, walletAddress: r.inviterWallet as string, refs: Number(r.refs) }));
+
     return NextResponse.json({
       leaderboard,
       totalCount: totalCount[0]?.count || 0,
       hasMore: offset + limit < (totalCount[0]?.count || 0),
+      referralLeaderboard,
     });
 
   } catch (error) {

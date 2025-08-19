@@ -12,6 +12,7 @@ import DailyTasks from '@/components/DailyTasks';
 import Leaderboard from '@/components/Leaderboard';
 import UserStats from '@/components/UserStats';
 import AdminTab from '@/components/admin/AdminTab';
+import ReferralLeaderboard from '@/components/ReferralLeaderboard';
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -22,6 +23,7 @@ export default function Home() {
   const baseTabs = [
     { id: 'tasks', label: 'Daily Tasks', icon: Calendar },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+    { id: 'referrals', label: 'Referrals', icon: Trophy },
     { id: 'stats', label: 'My Stats', icon: Users },
   ];
   const tabs = isAdmin
@@ -165,6 +167,7 @@ export default function Home() {
               <div className="min-h-96">
                 {activeTab === 'tasks' && <DailyTasks />}
                 {activeTab === 'leaderboard' && <Leaderboard />}
+                {activeTab === 'referrals' && <ReferralLeaderboard />}
                 {activeTab === 'stats' && <UserStats />}
                 {activeTab === 'admin' && isAdmin && <AdminTab />}
               </div>
@@ -208,20 +211,7 @@ export default function Home() {
 
                   {/* Referral feature removed */}
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="bg-gray-800/50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-bold text-white">#0</div>
-                      <div className="text-sm text-gray-400">Rank</div>
-                    </div>
-                    <div className="bg-gray-800/50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-bold text-white">0</div>
-                      <div className="text-sm text-gray-400">Refs</div>
-                    </div>
-                    <div className="bg-gray-800/50 rounded-lg p-3 text-center">
-                      <div className="text-2xl font-bold text-green-400">0</div>
-                      <div className="text-sm text-gray-400">BONES</div>
-                    </div>
-                  </div>
+                  {/* Mini stats removed per request */}
                 </div>
               </div>
             </div>

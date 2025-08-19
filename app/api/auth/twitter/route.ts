@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     twitterAuthUrl.searchParams.set('response_type', 'code');
     twitterAuthUrl.searchParams.set('client_id', clientId);
     twitterAuthUrl.searchParams.set('redirect_uri', redirectUri);
-    twitterAuthUrl.searchParams.set('scope', 'tweet.read users.read follows.read offline.access');
+    twitterAuthUrl.searchParams.set('scope', 'tweet.read users.read follows.read like.read offline.access');
     twitterAuthUrl.searchParams.set('state', state);
     twitterAuthUrl.searchParams.set('code_challenge', codeChallenge);
     twitterAuthUrl.searchParams.set('code_challenge_method', 'S256');

@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
       );
 
     const formattedTasks = tasks
-      // For once_until_done, hide if user has ever completed it
-      .filter(task => !(task.recurrenceType === 'once_until_done' && task.completedAt))
+      // For once_until_done, hide only if there is a VERIFIED completion (not failed)
+      .filter(task => !(task.recurrenceType === 'once_until_done' && task.verificationStatus === 'verified'))
       .map(task => ({
       id: task.id,
       title: task.title,
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       taskType: task.taskType,
       taskData: task.taskData,
       bonesReward: task.bonesReward,
-      isCompleted: !!task.completedAt,
+      isCompleted: task.verificationStatus === 'verified',
       verificationStatus: task.verificationStatus,
       bonesEarned: task.bonesEarned,
     }));
