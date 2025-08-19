@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
       success: true, 
       verified: verificationResult.verified,
       bonesEarned: verificationResult.verified ? taskData.bonesReward : 0,
-      message: verificationResult.message
+      message: verificationResult.message,
+      debug: verificationResult.data || undefined,
     });
 
   } catch (error) {
@@ -199,22 +200,24 @@ async function verifyTwitterLike(tweetIdInput: string, user: any) {
   const userId = await ensureTwitterUserId(user);
   if (!tweetId || !userId) return { verified: false, message: 'Missing tweet/user id', data: {} };
   // Prefer user-centric endpoint: liked tweets of the user
-  let res = await twitterFetch(user, `https://api.twitter.com/2/users/${userId}/liked_tweets?max_results=100&tweet.fields=id`);
+  const userLikedUrl = `https://api.twitter.com/2/users/${userId}/liked_tweets?max_results=100&tweet.fields=id`;
+  let res = await twitterFetch(user, userLikedUrl);
   if (!res.ok) {
     // Fallback to liking_users if liked_tweets denied
-    const fallback = await twitterFetch(user, `https://api.twitter.com/2/tweets/${tweetId}/liking_users?user.fields=id`);
+    const likingUsersUrl = `https://api.twitter.com/2/tweets/${tweetId}/liking_users?user.fields=id`;
+    const fallback = await twitterFetch(user, likingUsersUrl);
     if (!fallback.ok) {
       let info: any = undefined;
       try { info = await fallback.json(); } catch {}
-      return { verified: false, message: `Twitter API error (${fallback.status})`, data: { status: fallback.status, info } };
+      return { verified: false, message: `Twitter API error (${fallback.status})`, data: { status: fallback.status, info, endpoint: likingUsersUrl } };
     }
     const fdata = await fallback.json();
     const fverified = Array.isArray(fdata?.data) && fdata.data.some((u: any) => u.id === userId);
-    return { verified: fverified, message: fverified ? 'Like verified' : 'Like not found', data: { tweetId } };
+    return { verified: fverified, message: fverified ? 'Like verified' : 'Like not found', data: { tweetId, endpoint: likingUsersUrl } };
   }
   const data = await res.json();
   const verified = Array.isArray(data?.data) && data.data.some((t: any) => t.id === tweetId);
-  return { verified, message: verified ? 'Like verified' : 'Like not found', data: { tweetId } };
+  return { verified, message: verified ? 'Like verified' : 'Like not found', data: { tweetId, endpoint: userLikedUrl } };
 }
 
 async function verifyTwitterRetweet(tweetIdInput: string, user: any) {
@@ -222,22 +225,24 @@ async function verifyTwitterRetweet(tweetIdInput: string, user: any) {
   const userId = await ensureTwitterUserId(user);
   if (!tweetId || !userId) return { verified: false, message: 'Missing tweet/user id', data: {} };
   // Prefer user tweets with referenced_tweets to detect retweet
-  let res = await twitterFetch(user, `https://api.twitter.com/2/users/${userId}/tweets?max_results=100&tweet.fields=referenced_tweets`);
+  const userTweetsUrl = `https://api.twitter.com/2/users/${userId}/tweets?max_results=100&tweet.fields=referenced_tweets`;
+  let res = await twitterFetch(user, userTweetsUrl);
   if (!res.ok) {
     // Fallback to retweeted_by
-    const fallback = await twitterFetch(user, `https://api.twitter.com/2/tweets/${tweetId}/retweeted_by?user.fields=id`);
+    const retweetedByUrl = `https://api.twitter.com/2/tweets/${tweetId}/retweeted_by?user.fields=id`;
+    const fallback = await twitterFetch(user, retweetedByUrl);
     if (!fallback.ok) {
       let info: any = undefined;
       try { info = await fallback.json(); } catch {}
-      return { verified: false, message: `Twitter API error (${fallback.status})`, data: { status: fallback.status, info } };
+      return { verified: false, message: `Twitter API error (${fallback.status})`, data: { status: fallback.status, info, endpoint: retweetedByUrl } };
     }
     const fdata = await fallback.json();
     const fverified = Array.isArray(fdata?.data) && fdata.data.some((u: any) => u.id === userId);
-    return { verified: fverified, message: fverified ? 'Retweet verified' : 'Retweet not found', data: { tweetId } };
+    return { verified: fverified, message: fverified ? 'Retweet verified' : 'Retweet not found', data: { tweetId, endpoint: retweetedByUrl } };
   }
   const data = await res.json();
   const verified = Array.isArray(data?.data) && data.data.some((t: any) => Array.isArray(t.referenced_tweets) && t.referenced_tweets.some((r: any) => r.type === 'retweeted' && r.id === tweetId));
-  return { verified, message: verified ? 'Retweet verified' : 'Retweet not found', data: { tweetId } };
+  return { verified, message: verified ? 'Retweet verified' : 'Retweet not found', data: { tweetId, endpoint: userTweetsUrl } };
 }
 
 async function verifyTwitterFollow(usernameInput: string, user: any) {
@@ -245,25 +250,27 @@ async function verifyTwitterFollow(usernameInput: string, user: any) {
   const targetUsername = extractUsername(usernameInput || '');
   if (!userId || !targetUsername) return { verified: false, message: 'Missing user/username', data: {} };
   // Resolve target user id
-  const targetRes = await twitterFetch(user, `https://api.twitter.com/2/users/by/username/${encodeURIComponent(targetUsername)}`);
+  const resolveUserUrl = `https://api.twitter.com/2/users/by/username/${encodeURIComponent(targetUsername)}`;
+  const targetRes = await twitterFetch(user, resolveUserUrl);
   if (!targetRes.ok) {
     let info: any = undefined;
     try { info = await targetRes.json(); } catch {}
-    return { verified: false, message: `Twitter API error (${targetRes.status})`, data: { status: targetRes.status, info } };
+    return { verified: false, message: `Twitter API error (${targetRes.status})`, data: { status: targetRes.status, info, endpoint: resolveUserUrl } };
   }
   const targetData = await targetRes.json();
   const targetId = targetData?.data?.id;
   if (!targetId) return { verified: false, message: 'Target not found', data: {} };
   // Check following
-  const res = await twitterFetch(user, `https://api.twitter.com/2/users/${userId}/following?max_results=1000&user.fields=id`);
+  const followingUrl = `https://api.twitter.com/2/users/${userId}/following?max_results=1000&user.fields=id`;
+  const res = await twitterFetch(user, followingUrl);
   if (!res.ok) {
     let info: any = undefined;
     try { info = await res.json(); } catch {}
-    return { verified: false, message: `Twitter API error (${res.status})`, data: { status: res.status, info } };
+    return { verified: false, message: `Twitter API error (${res.status})`, data: { status: res.status, info, endpoint: followingUrl } };
   }
   const data = await res.json();
   const verified = Array.isArray(data?.data) && data.data.some((u: any) => u.id === targetId);
-  return { verified, message: verified ? 'Follow verified' : 'Follow not found', data: { targetUsername } };
+  return { verified, message: verified ? 'Follow verified' : 'Follow not found', data: { targetUsername, endpoint: followingUrl } };
 }
 
 async function verifyTwitterHashtagPost(hashtagInput: string, user: any) {
@@ -273,15 +280,16 @@ async function verifyTwitterHashtagPost(hashtagInput: string, user: any) {
   if (!hashtag) return { verified: false, message: 'Missing hashtag', data: {} };
   const hash = hashtag.startsWith('#') ? hashtag : `#${hashtag}`;
   const query = encodeURIComponent(`from:${userId} ${hash} -is:retweet`);
-  const res = await twitterFetch(user, `https://api.twitter.com/2/tweets/search/recent?query=${query}&max_results=25&tweet.fields=created_at`);
+  const searchUrl = `https://api.twitter.com/2/tweets/search/recent?query=${query}&max_results=25&tweet.fields=created_at`;
+  const res = await twitterFetch(user, searchUrl);
   if (!res.ok) {
     let info: any = undefined;
     try { info = await res.json(); } catch {}
-    return { verified: false, message: `Twitter API error (${res.status})`, data: { status: res.status, info } };
+    return { verified: false, message: `Twitter API error (${res.status})`, data: { status: res.status, info, endpoint: searchUrl } };
   }
   const data = await res.json();
   const verified = Array.isArray(data?.data) && data.data.length > 0;
-  return { verified, message: verified ? 'Hashtag post found' : 'No hashtag post found', data: { hashtag: hash } };
+  return { verified, message: verified ? 'Hashtag post found' : 'No hashtag post found', data: { hashtag: hash, endpoint: searchUrl } };
 }
 
 async function verifyTwitterComment(tweetIdInput: string, user: any) {
@@ -289,13 +297,14 @@ async function verifyTwitterComment(tweetIdInput: string, user: any) {
   const tweetId = extractTweetId(tweetIdInput || '');
   if (!userId || !tweetId) return { verified: false, message: 'Missing tweet/user id', data: {} };
   const query = encodeURIComponent(`conversation_id:${tweetId} from:${userId} -is:retweet`);
-  const res = await twitterFetch(user, `https://api.twitter.com/2/tweets/search/recent?query=${query}&max_results=25&tweet.fields=conversation_id,author_id,created_at`);
+  const searchUrl = `https://api.twitter.com/2/tweets/search/recent?query=${query}&max_results=25&tweet.fields=conversation_id,author_id,created_at`;
+  const res = await twitterFetch(user, searchUrl);
   if (!res.ok) {
     let info: any = undefined;
     try { info = await res.json(); } catch {}
-    return { verified: false, message: `Twitter API error (${res.status})`, data: { status: res.status, info } };
+    return { verified: false, message: `Twitter API error (${res.status})`, data: { status: res.status, info, endpoint: searchUrl } };
   }
   const data = await res.json();
   const verified = Array.isArray(data?.data) && data.data.length > 0;
-  return { verified, message: verified ? 'Reply found' : 'Reply not found', data: { tweetId } };
+  return { verified, message: verified ? 'Reply found' : 'Reply not found', data: { tweetId, endpoint: searchUrl } };
 }
