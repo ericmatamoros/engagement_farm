@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 type Stats = {
   totalYaps: number; // BONES
@@ -10,7 +10,8 @@ type Stats = {
 };
 
 export default function UserMiniStats() {
-  const { address } = useAccount();
+  const { publicKey } = useWallet();
+  const address = publicKey?.toBase58();
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {

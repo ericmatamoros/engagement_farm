@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { Twitter, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
 
 export default function TwitterConnection() {
-  const { address } = useAccount();
+  const { publicKey } = useWallet();
+  const address = publicKey?.toBase58();
   const [isConnected, setIsConnected] = useState(false);
   const [twitterUsername, setTwitterUsername] = useState('');
   const [isLoading, setIsLoading] = useState(false);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { Calendar, Image, Hash, Heart, Repeat2, UserPlus, MessageCircle } from 'lucide-react';
 
 interface TaskFormData {
@@ -31,7 +31,8 @@ const taskTypes = [
 ];
 
 export default function AdminTaskForm({ onSuccess, onCancel, editTask }: AdminTaskFormProps) {
-  const { address } = useAccount();
+  const { publicKey } = useWallet();
+  const address = publicKey?.toBase58();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<TaskFormData>({
     title: editTask?.title || '',

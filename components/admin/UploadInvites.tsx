@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 export default function UploadInvites() {
-  const { address } = useAccount();
+  const { publicKey } = useWallet();
+  const address = publicKey?.toBase58();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{inserted:number; skipped:number} | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);

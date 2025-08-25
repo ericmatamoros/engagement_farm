@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 type ReferralEntry = {
   rank: number;
@@ -10,7 +10,8 @@ type ReferralEntry = {
 };
 
 export default function ReferralLeaderboard() {
-  const { address } = useAccount();
+  const { publicKey } = useWallet();
+  const address = publicKey?.toBase58();
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<ReferralEntry[]>([]);
 

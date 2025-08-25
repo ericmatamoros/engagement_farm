@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { 
   Heart, 
   Repeat2, 
@@ -43,7 +43,8 @@ const taskColors = {
 };
 
 export default function DailyTasks() {
-  const { address } = useAccount();
+  const { publicKey } = useWallet();
+  const address = publicKey?.toBase58();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasReferral, setHasReferral] = useState<boolean | null>(null);

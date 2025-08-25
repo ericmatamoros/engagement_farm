@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { 
   Plus, 
   Calendar, 
@@ -19,7 +19,8 @@ import TaskList from '@/components/admin/TaskList';
 import UploadInvites from '@/components/admin/UploadInvites';
 
 export default function AdminPanel() {
-  const { address } = useAccount();
+  const { publicKey } = useWallet();
+  const address = publicKey?.toBase58();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tasks');

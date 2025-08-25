@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import UserMiniStats from '@/components/UserMiniStats';
+import { useWallet } from '@solana/wallet-adapter-react';
+import dynamic from 'next/dynamic';
+import SolanaConnect from '@/components/SolanaConnect';
 import { Wallet, Twitter, Trophy, CheckCircle, Users, Calendar, Settings } from 'lucide-react';
 import WalletConnection from '@/components/WalletConnection';
 import TwitterConnection from '@/components/TwitterConnection';
@@ -13,9 +13,12 @@ import Leaderboard from '@/components/Leaderboard';
 import UserStats from '@/components/UserStats';
 import AdminTab from '@/components/admin/AdminTab';
 import ReferralLeaderboard from '@/components/ReferralLeaderboard';
+import LeaderboardsCombined from '@/components/LeaderboardsCombined';
 
 export default function Home() {
-  const { address, isConnected } = useAccount();
+  const { publicKey, connected } = useWallet();
+  const address = publicKey?.toBase58();
+  const isConnected = connected;
   const [activeTab, setActiveTab] = useState('tasks');
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -23,7 +26,6 @@ export default function Home() {
   const baseTabs = [
     { id: 'tasks', label: 'Daily Tasks', icon: Calendar },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-    { id: 'referrals', label: 'Referrals', icon: Trophy },
     { id: 'stats', label: 'My Stats', icon: Users },
   ];
   const tabs = isAdmin
@@ -64,11 +66,11 @@ export default function Home() {
       <header className="relative z-10 p-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-3">
-            <span className="mono-font text-white text-2xl font-extrabold tracking-widest">&milo</span>
+            <span className="mono-font text-white text-2xl font-extrabold tracking-widest">milo</span>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <ConnectButton chainStatus="none" showBalance={false} />
+          <div className="flex items-center space-x-4 relative z-50">
+            <SolanaConnect />
           </div>
         </div>
       </header>
@@ -82,7 +84,7 @@ export default function Home() {
             <div className="space-y-8">
               <div>
                 <h2 className="text-6xl font-bold mb-6 text-white mono-font" style={{ letterSpacing: '1px' }}>
-                  WELCOME TO &milo
+                  WELCOME TO milo
                 </h2>
                 <p className="text-xl text-gray-300 mb-8">
                   Join the <span className="text-blue-400">Attention Mining Mission</span> to earn BONES.
@@ -148,8 +150,6 @@ export default function Home() {
                   </div>
 
                   {/* Referral feature removed */}
-
-                  <UserMiniStats />
                 </div>
               </div>
             </div>
@@ -166,8 +166,7 @@ export default function Home() {
               {/* Tab Content */}
               <div className="min-h-96">
                 {activeTab === 'tasks' && <DailyTasks />}
-                {activeTab === 'leaderboard' && <Leaderboard />}
-                {activeTab === 'referrals' && <ReferralLeaderboard />}
+                {activeTab === 'leaderboard' && <LeaderboardsCombined />}
                 {activeTab === 'stats' && <UserStats />}
                 {activeTab === 'admin' && isAdmin && <AdminTab />}
               </div>
